@@ -1,0 +1,105 @@
+Metadata-Version: 2.4
+Name: dual-uav-isac
+Version: 0.1.0
+Summary: Dual UAV-assisted ISAC with Deep Reinforcement Learning
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: gymnasium>=0.29.1
+Requires-Dist: numpy>=1.26
+Requires-Dist: scipy>=1.11
+Requires-Dist: torch>=2.1
+Requires-Dist: stable-baselines3==2.3.2
+Requires-Dist: matplotlib>=3.8
+Requires-Dist: tyro>=0.7.3
+Requires-Dist: tqdm>=4.66
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4; extra == "dev"
+Requires-Dist: ruff>=0.6; extra == "dev"
+Requires-Dist: tensorboard>=2.15; extra == "dev"
+Dynamic: requires-python
+
+# Dual UAV-assisted ISAC: A DRL-based framework
+
+Dual UAV-assisted ISAC (Integrated Sensing and Communication) with two cooperative UAVs trained via Deep RL. This repo focuses on Soft Actor-Critic (SAC) with TD3 baseline, and a MAPPO plan (stub) for future multi-agent centralized-critic.
+
+- First-class: SAC training pipeline and evaluation
+- Baselines: TD3, simple heuristics (circle/greedy)
+- Metrics: communication utility, sensing utility, energy, safety, secrecy proxy
+- Roadmap: security-aware features (artificial noise, jammer mode), MAPPO, richer channels
+
+## Quickstart
+
+```bash
+# Install (Python 3.11)
+pip install -r requirements.txt
+pip install tensorboard  # Optional but recommended for training logs
+
+# Option 1: Quick demo (short training + evaluation + plots)
+python -m src.scripts.demo
+
+# Option 2: Full training pipeline
+# Train SAC
+python -m src.training.train_sac --total_timesteps 300000 --alpha 0.5 --n_users 8 --n_targets 1 --save_dir runs/sac_a05_u8_t1
+
+# Evaluate trained model
+python -m src.eval.eval_rollout --model_path runs/sac_a05_u8_t1/model.zip --alpha 0.5 --n_episodes 20
+
+# Run baselines for comparison
+python -m src.eval.eval_rollout --baseline circle --alpha 0.5 --n_episodes 20 --out runs/baselines/circle
+python -m src.eval.eval_rollout --baseline greedy_comms --alpha 0.5 --n_episodes 20 --out runs/baselines/greedy_comms
+
+# Plot results from one or many runs
+python -m src.eval.plots --inputs runs/*/results.jsonl --out reports/figures
+
+# View training curves (optional)
+tensorboard --logdir runs
+```
+
+## Environment (MDP)
+- 2 UAVs in a 2D 2000×2000 m area; altitude z ∈ [80, 180] m; dt = 1 s; vmax = 25 m/s
+- Users (N=6–10) fixed in (x,y); Targets (T=1–2) with (x,y), confidence state
+- Optional eavesdropper sector (angle ±spread)
+
+### Action (per UAV, Box[-1,1], 5 dims)
+[Δheading, speed_frac, Δz_norm, time_split_sense, power_split_AN]
+- Internally mapped to physical units; fractions are clamped to [0,1]
+
+### Observation (normalized ~[-1,1])
+- UAVs: x, y, z, heading, battery (2×5)
+- Users: positions (N×2), deficits (N)
+- Targets: positions (T×2), confidence (T)
+- Time-left scalar
+- Optional coarse no-fly 10×10 mask (flattened)
+
+### Reward (clamped to [-1,1])
+
+r = α·CommsUtility + (1-α)·SensingUtility − λ·EnergyUse − μ·SafetyViolations − η·LeakageProxy
+
+- CommsUtility: users assigned to nearest UAV; SNR ≈ K_c / d_3D^2; sum log2(1+SNR), scaled by (1-avg time_split_sense)·(1-avg power_split_AN)
+- SensingUtility: higher when close to targets and with wider UAV baseline around target, scaled by avg time_split_sense
+- EnergyUse: movement (speed^2), altitude change cost, small tx cost
+- SafetyViolations: min UAV separation < 50 m, out-of-bounds, no-fly incurs penalties
+- LeakageProxy: increases if headings align toward eavesdropper sector with low AN; reduced by higher AN or jammer mode
+
+Episode length ≈ 400 steps or when battery low.
+
+## Baselines
+- circle_strategy: both UAVs circle opposite centers; fixed splits 0.5 time / 0.2 AN
+- greedy_strategy: comms (move to user centroid, time split=0.2) or sense (maximize baseline, time split=0.8)
+
+## Scripts
+- Training: `src/training/train_sac.py`, `src/training/train_td3.py`
+- Evaluation: `src/eval/eval_rollout.py`
+- Plots: `src/eval/plots.py`
+- Pareto sweep: `src/scripts/make_pareto.py`
+
+## Roadmap
+- [ ] MAPPO centralized critic (PettingZoo-style wrapper)
+- [ ] Rich channel (LoS/NLoS), sensing CRB proxies, RIS
+- [ ] Security extensions: cooperative jammer, adaptive AN
+
+## Notes
+- Deterministic seeding supported
+- Reward terms scaled to target total ~[-1,1]
+- Fails fast on NaNs; prints periodic logs
+
