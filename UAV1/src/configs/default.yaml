@@ -1,0 +1,46 @@
+alpha: 0.5
+n_users: 8
+n_targets: 1
+area_size: 2000.0
+zmin: 80.0
+zmax: 180.0
+dt: 1.0
+vmax: 25.0
+horizon: 400
+kc: 1.0
+sensing_scale: 1.0
+energy_lambda: 0.05
+safety_mu: 0.2
+leakage_eta: 0.1
+min_separation: 50.0
+no_fly_enabled: false
+jammer_threshold: 0.7
+random_seed: 42
+
+# Advanced channel model parameters
+channel_model: "rician"  # "simple" or "rician"
+carrier_freq_ghz: 2.4
+tx_power_dbm: 30.0
+noise_power_dbm: -90.0
+environment: "suburban"  # suburban, urban, rural
+
+# Advanced sensing model parameters
+sensing_model: "crb"  # "geometric" or "crb"
+sensing_carrier_freq_ghz: 24.0  # mmWave for sensing
+sensing_bandwidth_mhz: 100.0
+target_rcs_dbsm: 10.0
+
+# Advanced energy model parameters
+energy_model: "aerodynamic"  # "simple" or "aerodynamic"
+uav_mass_kg: 2.0
+battery_capacity_wh: 100.0
+
+# Secrecy model parameters
+secrecy_model: "capacity"  # "proxy" or "capacity"
+an_power_fraction: 0.3
+
+# QoS queue parameters
+qos_model: "queue"  # "deficit" or "queue"
+arrival_rate_mbps: 1.0
+max_queue_size_mb: 10.0
+

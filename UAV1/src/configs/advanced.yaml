@@ -1,0 +1,50 @@
+# Advanced Configuration (IEEE-Worthy Models)
+# Use this for publication-grade experiments
+
+alpha: 0.5
+n_users: 8
+n_targets: 1
+area_size: 2000.0
+zmin: 80.0
+zmax: 180.0
+dt: 1.0
+vmax: 25.0
+horizon: 400
+kc: 1.0
+sensing_scale: 1.0
+energy_lambda: 0.05
+safety_mu: 0.2
+leakage_eta: 0.1
+min_separation: 50.0
+no_fly_enabled: false
+jammer_threshold: 0.7
+random_seed: 42
+
+# Use advanced IEEE-worthy models
+channel_model: "rician"           # Rician fading with LoS/NLoS
+sensing_model: "crb"              # Cramér-Rao Bound based
+energy_model: "aerodynamic"       # Realistic UAV power
+secrecy_model: "capacity"         # Information-theoretic
+qos_model: "queue"                # Queue theory
+
+# Advanced channel model parameters
+carrier_freq_ghz: 2.4             # 2.4 GHz for communication
+tx_power_dbm: 30.0                # 1 Watt transmission
+noise_power_dbm: -90.0            # Thermal noise floor
+environment: "suburban"           # suburban, urban, rural
+
+# Advanced sensing model parameters
+sensing_carrier_freq_ghz: 24.0    # 24 GHz mmWave for sensing
+sensing_bandwidth_mhz: 100.0      # 100 MHz bandwidth
+target_rcs_dbsm: 10.0             # 10 dBsm radar cross-section
+
+# Advanced energy model parameters
+uav_mass_kg: 2.0                  # 2 kg quadcopter
+battery_capacity_wh: 100.0        # 100 Wh battery (~25 min flight)
+
+# Secrecy model parameters
+an_power_fraction: 0.3            # 30% power for artificial noise
+
+# QoS queue parameters
+arrival_rate_mbps: 1.0            # 1 Mbps arrival per user
+max_queue_size_mb: 10.0           # 10 MB buffer
