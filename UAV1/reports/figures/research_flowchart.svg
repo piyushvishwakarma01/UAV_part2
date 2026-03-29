@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1600" width="1200" height="1600">
+  <defs>
+    <style>
+      .box-main { fill: #E3F2FD; stroke: #1976D2; stroke-width: 2; }
+      .box-model { fill: #F3E5F5; stroke: #7B1FA2; stroke-width: 2; }
+      .box-algo { fill: #E8F5E9; stroke: #388E3C; stroke-width: 2; }
+      .box-eval { fill: #FFF3E0; stroke: #F57C00; stroke-width: 2; }
+      .box-result { fill: #FCE4EC; stroke: #C2185B; stroke-width: 2; }
+      .text-title { font-size: 18px; font-weight: bold; text-anchor: middle; }
+      .text-label { font-size: 14px; text-anchor: middle; }
+      .text-small { font-size: 12px; text-anchor: middle; }
+      .arrow { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .group-label { font-size: 13px; font-weight: bold; fill: #555; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#333" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="600" y="40" class="text-title" style="font-size: 22px;">Dual-UAV ISAC: Research Pipeline</text>
+
+  <!-- ===== PROBLEM DEFINITION ===== -->
+  <rect x="400" y="80" width="400" height="120" class="box-main" rx="8"/>
+  <text x="600" y="110" class="text-title">Research Problem</text>
+  <text x="600" y="135" class="text-small">Design cooperative dual-UAV policies</text>
+  <text x="600" y="155" class="text-small">balancing communications, sensing,</text>
+  <text x="600" y="175" class="text-small">energy, security, and QoS</text>
+
+  <!-- Arrow down -->
+  <path d="M 600 200 L 600 240" class="arrow"/>
+
+  <!-- ===== SYSTEM MODEL & ASSUMPTIONS ===== -->
+  <rect x="350" y="240" width="500" height="140" class="box-main" rx="8"/>
+  <text x="600" y="265" class="text-title">System Model &amp; Assumptions</text>
+  <text x="600" y="290" class="text-small">• 2 UAVs in 3D airspace (altitude range, speed limits)</text>
+  <text x="600" y="310" class="text-small">• N ground users (communication terminals)</text>
+  <text x="600" y="330" class="text-small">• T target locations (sensing objectives)</text>
+  <text x="600" y="350" class="text-small">• Eavesdropper with known sector → secrecy constraint</text>
+
+  <!-- Arrow down -->
+  <path d="M 600 380 L 600 420" class="arrow"/>
+
+  <!-- ===== PHYSICAL MODELS (Group) ===== -->
+  <g>
+    <rect x="150" y="420" width="900" height="340" fill="none" stroke="#7B1FA2" stroke-width="2" stroke-dasharray="5,5" rx="8"/>
+    <text x="170" y="445" class="group-label">Physical Models &amp; Simulation Engine</text>
+    
+    <!-- Model 1: Channel -->
+    <rect x="180" y="460" width="180" height="120" class="box-model" rx="6"/>
+    <text x="270" y="485" class="text-label" style="font-weight: bold;">Channel Model</text>
+    <text x="270" y="510" class="text-small">• Rician fading</text>
+    <text x="270" y="530" class="text-small">• LoS/NLoS</text>
+    <text x="270" y="550" class="text-small">propagation</text>
+
+    <!-- Model 2: Sensing -->
+    <rect x="420" y="460" width="180" height="120" class="box-model" rx="6"/>
+    <text x="510" y="485" class="text-label" style="font-weight: bold;">Sensing Model</text>
+    <text x="510" y="510" class="text-small">• Cramér-Rao</text>
+    <text x="510" y="530" class="text-small">Bound (CRB)</text>
+    <text x="510" y="550" class="text-small">• Bistatic radar</text>
+
+    <!-- Model 3: Energy -->
+    <rect x="660" y="460" width="180" height="120" class="box-model" rx="6"/>
+    <text x="750" y="485" class="text-label" style="font-weight: bold;">Energy Model</text>
+    <text x="750" y="510" class="text-small">• Aerodynamic</text>
+    <text x="750" y="530" class="text-small">• Blade profile,</text>
+    <text x="750" y="550" class="text-small">induced power</text>
+
+    <!-- Model 4: Secrecy -->
+    <rect x="180" y="620" width="180" height="120" class="box-model" rx="6"/>
+    <text x="270" y="645" class="text-label" style="font-weight: bold;">Secrecy Model</text>
+    <text x="270" y="670" class="text-small">• Secrecy capacity</text>
+    <text x="270" y="690" class="text-small">• Artificial noise</text>
+    <text x="270" y="710" class="text-small">• Cooperative jam</text>
+
+    <!-- Model 5: QoS -->
+    <rect x="420" y="620" width="180" height="120" class="box-model" rx="6"/>
+    <text x="510" y="645" class="text-label" style="font-weight: bold;">QoS Model</text>
+    <text x="510" y="670" class="text-small">• Queue theory</text>
+    <text x="510" y="690" class="text-small">• Arrival/service</text>
+    <text x="510" y="710" class="text-small">rates</text>
+
+    <!-- Dynamics box -->
+    <rect x="660" y="620" width="180" height="120" class="box-model" rx="6"/>
+    <text x="750" y="645" class="text-label" style="font-weight: bold;">Dynamics &amp; Control</text>
+    <text x="750" y="670" class="text-small">• Position updates</text>
+    <text x="750" y="690" class="text-small">• Heading, altitude,</text>
+    <text x="750" y="710" class="text-small">battery drain</text>
+  </g>
+
+  <!-- Arrow down -->
+  <path d="M 600 760 L 600 800" class="arrow"/>
+
+  <!-- ===== MDP FORMULATION ===== -->
+  <rect x="300" y="800" width="600" height="160" class="box-main" rx="8"/>
+  <text x="600" y="830" class="text-title">MDP Formulation</text>
+  <text x="600" y="860" class="text-small">• State: UAV positions, batteries, user deficits, target confidence</text>
+  <text x="600" y="885" class="text-small">• Action: 10-D control (heading, speed, altitude, sensing/AN allocation per UAV)</text>
+  <text x="600" y="910" class="text-small">• Reward: r = α·comms + (1–α)·sensing – λ·energy – η·leakage – safety penalties</text>
+  <text x="600" y="935" class="text-small">• Observation: normalized vector of state variables</text>
+
+  <!-- Arrow down -->
+  <path d="M 600 960 L 600 1000" class="arrow"/>
+
+  <!-- ===== ALGORITHMS (Group) ===== -->
+  <g>
+    <rect x="200" y="1000" width="800" height="180" fill="none" stroke="#388E3C" stroke-width="2" stroke-dasharray="5,5" rx="8"/>
+    <text x="220" y="1025" class="group-label">Learning Algorithms</text>
+    
+    <!-- SAC -->
+    <rect x="280" y="1045" width="200" height="100" class="box-algo" rx="6"/>
+    <text x="380" y="1075" class="text-label" style="font-weight: bold;">SAC (Primary)</text>
+    <text x="380" y="1100" class="text-small">Soft Actor-Critic</text>
+    <text x="380" y="1120" class="text-small">Model-free, off-policy</text>
+
+    <!-- TD3 -->
+    <rect x="550" y="1045" width="200" height="100" class="box-algo" rx="6"/>
+    <text x="650" y="1075" class="text-label" style="font-weight: bold;">TD3 (Baseline)</text>
+    <text x="650" y="1100" class="text-small">Twin Delayed DDPG</text>
+    <text x="650" y="1120" class="text-small">Deterministic policy</text>
+
+    <!-- MAPPO (Future) -->
+    <rect x="820" y="1045" width="200" height="100" class="box-algo" rx="6"/>
+    <text x="920" y="1075" class="text-label" style="font-weight: bold;">MAPPO (Future)</text>
+    <text x="920" y="1100" class="text-small">Multi-agent PPO</text>
+    <text x="920" y="1120" class="text-small">Centralized training</text>
+  </g>
+
+  <!-- Arrow down -->
+  <path d="M 600 1180 L 600 1220" class="arrow"/>
+
+  <!-- ===== TRAINING PIPELINE ===== -->
+  <rect x="300" y="1220" width="600" height="120" class="box-algo" rx="8"/>
+  <text x="600" y="1250" class="text-title">Training Pipeline</text>
+  <text x="600" y="1280" class="text-small">• Vectorized environments, checkpointing every 50k steps</text>
+  <text x="600" y="1305" class="text-small">• Hyperparameter sweeps: total timesteps (300k), α [0.1–0.9], n_users, n_targets</text>
+
+  <!-- Arrow down -->
+  <path d="M 600 1340 L 600 1380" class="arrow"/>
+
+  <!-- ===== EVALUATION &amp; RESULTS (Group) ===== -->
+  <g>
+    <rect x="100" y="1380" width="1000" height="200" fill="none" stroke="#F57C00" stroke-width="2" stroke-dasharray="5,5" rx="8"/>
+    <text x="120" y="1405" class="group-label">Evaluation Protocol &amp; Analysis</text>
+    
+    <!-- Trained policies -->
+    <rect x="150" y="1430" width="140" height="100" class="box-eval" rx="6"/>
+    <text x="220" y="1460" class="text-small" style="font-weight: bold;">Trained</text>
+    <text x="220" y="1480" class="text-small">Policies</text>
+    <text x="220" y="1500" class="text-small">(SAC/TD3)</text>
+
+    <!-- Baselines -->
+    <rect x="360" y="1430" width="140" height="100" class="box-eval" rx="6"/>
+    <text x="430" y="1460" class="text-small" style="font-weight: bold;">Baseline</text>
+    <text x="430" y="1480" class="text-small">Policies</text>
+    <text x="430" y="1500" class="text-small">(circle, greedy)</text>
+
+    <!-- Metrics -->
+    <rect x="570" y="1430" width="140" height="100" class="box-eval" rx="6"/>
+    <text x="640" y="1460" class="text-small" style="font-weight: bold;">Metrics</text>
+    <text x="640" y="1480" class="text-small">Computed</text>
+    <text x="640" y="1500" class="text-small">(20 episodes)</text>
+
+    <!-- Multi-objective -->
+    <rect x="780" y="1430" width="140" height="100" class="box-eval" rx="6"/>
+    <text x="850" y="1460" class="text-small" style="font-weight: bold;">Multi-obj</text>
+    <text x="850" y="1480" class="text-small">Analysis</text>
+    <text x="850" y="1500" class="text-small">(Pareto)</text>
+
+    <!-- Final results -->
+    <rect x="990" y="1430" width="80" height="100" class="box-result" rx="6"/>
+    <text x="1030" y="1470" class="text-small" style="font-weight: bold;">Results</text>
+    <text x="1030" y="1495" class="text-small">&amp;</text>
+    <text x="1030" y="1510" class="text-small">Plots</text>
+  </g>
+
+  <!-- Arrow down -->
+  <path d="M 600 1580 L 600 1640" class="arrow" stroke-dasharray="3,3"/>
+
+  <!-- ===== CONTRIBUTIONS & CONCLUSIONS ===== -->
+  <text x="600" y="1665" class="text-title" style="font-size: 16px;">Insights: Trade-offs (comms ↔ sensing), Energy-Secrecy Pareto Front, Multi-Objective Optimization</text>
+
+  <!-- Legend -->
+  <text x="50" y="1530" class="group-label">Legend:</text>
+  <rect x="50" y="1545" width="20" height="20" class="box-main"/>
+  <text x="75" y="1560" class="text-small">Problem/MDP</text>
+  
+  <rect x="250" y="1545" width="20" height="20" class="box-model"/>
+  <text x="275" y="1560" class="text-small">Physical Model</text>
+  
+  <rect x="500" y="1545" width="20" height="20" class="box-algo"/>
+  <text x="525" y="1560" class="text-small">Algorithm/Training</text>
+  
+  <rect x="800" y="1545" width="20" height="20" class="box-eval"/>
+  <text x="825" y="1560" class="text-small">Evaluation</text>
+
+</svg>
