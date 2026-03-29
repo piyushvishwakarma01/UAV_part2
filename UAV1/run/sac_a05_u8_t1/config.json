@@ -1,0 +1,8 @@
+{
+  "algo": "SAC",
+  "total_timesteps": 300000,
+  "alpha": 0.5,
+  "n_users": 8,
+  "n_targets": 1,
+  "seed": 42
+}
