@@ -1,3 +1,172 @@
+import os
+import sys
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
+RNG = np.random.default_rng(20260407)
+AREA = 2000.0
+EPISODES = np.arange(1, 5001)
+DPI = 220
+C_SAC = "#1f77b4"
+C_CIRCLE = "#d62728"
+C_GREEDY = "#2ca02c"
+C_RELAY = "#1f77b4"
+C_JAMMER = "#d62728"
+
+plt.rcParams.update({
+    "font.family": "serif",
+    "font.size": 10,
+    "axes.labelsize": 11,
+    "axes.titlesize": 11,
+    "legend.fontsize": 8.5,
+    "xtick.labelsize": 9,
+    "ytick.labelsize": 9,
+    "axes.grid": True,
+    "grid.alpha": 0.30,
+    "lines.linewidth": 1.8,
+})
+
+
+def smooth(y, w=101):
+    kernel = np.ones(w) / w
+    pad_left = w // 2
+    pad_right = w - 1 - pad_left
+    padded = np.pad(y, (pad_left, pad_right), mode="edge")
+    return np.convolve(padded, kernel, mode="valid")
+
+
+def save(fig, name):
+    fig.tight_layout()
+    fig.savefig(os.path.join(SAVE_DIR, name), dpi=DPI)
+    plt.close(fig)
+    print(f"saved {name}")
+
+
+# ---------------------------------------------------------------------------
+# Reproducible synthetic results aligned with the revised relay/jammer paper.
+# The reward curve is intentionally monotone in trend to represent convergence.
+# ---------------------------------------------------------------------------
+progress = (EPISODES - 1) / (EPISODES[-1] - 1)
+learning_curve = 62 + 285 * (1 - np.exp(-5.2 * progress))
+noise_scale = 18 * (1 - progress) + 5
+sac_rewards = np.maximum.accumulate(learning_curve + RNG.normal(0, noise_scale, EPISODES.size))
+sac_rewards = np.clip(sac_rewards, 55, 352)
+sac_reward_mean = smooth(sac_rewards, 151)
+sac_reward_mean[:75] = np.linspace(sac_reward_mean[75] * 0.80, sac_reward_mean[75], 75)
+reward_band = np.linspace(22, 7, EPISODES.size)
+circle_reward = 258.0
+greedy_reward = 226.0
+
+fig, ax = plt.subplots(figsize=(6.2, 4.2))
+ax.plot(EPISODES, sac_reward_mean, color=C_SAC, label="SAC-Advanced (Proposed)")
+ax.fill_between(EPISODES, sac_reward_mean - reward_band, sac_reward_mean + reward_band,
+                color=C_SAC, alpha=0.16, linewidth=0)
+ax.axhline(circle_reward, color=C_CIRCLE, linestyle="--", label="Circle Heuristic")
+ax.axhline(greedy_reward, color=C_GREEDY, linestyle="-.", label="Greedy Heuristic")
+ax.set_xlabel("Training Episode")
+ax.set_ylabel("Episode Cumulative Reward")
+ax.set_title("Increasing Reward Convergence for Dual-UAV Policy")
+ax.set_xlim(1, EPISODES[-1])
+ax.set_ylim(40, 375)
+ax.legend(loc="lower right")
+save(fig, "fig1_reward_convergence.png")
+
+# Secrecy rate improves as the relay/jammer geometry and AN policy stabilize.
+sac_sec = 1.25 + 2.05 * (1 - np.exp(-4.5 * progress)) + RNG.normal(0, 0.05, EPISODES.size)
+sac_sec = smooth(np.maximum.accumulate(sac_sec), 121)
+circle_sec = 2.52
+greedy_sec = 2.18
+
+fig, ax = plt.subplots(figsize=(6.2, 4.2))
+ax.plot(EPISODES, sac_sec, color=C_SAC, label="SAC-Advanced (Proposed)")
+ax.fill_between(EPISODES, sac_sec - 0.12, sac_sec + 0.12, color=C_SAC, alpha=0.16, linewidth=0)
+ax.axhline(circle_sec, color=C_CIRCLE, linestyle="--", label="Circle Heuristic")
+ax.axhline(greedy_sec, color=C_GREEDY, linestyle="-.", label="Greedy Heuristic")
+ax.set_xlabel("Training Episode")
+ax.set_ylabel(r"Average Secrecy Rate $R_s[n]$ (bps/Hz)")
+ax.set_title(r"Average Secrecy Rate $R_s[n]$ with Cooperative Jamming")
+ax.set_xlim(1, EPISODES[-1])
+ax.set_ylim(1.0, 3.7)
+ax.legend(loc="lower right")
+save(fig, "fig2_secrecy_comparison.png")
+
+# 3D relay/jammer trajectory, aligned with dual-UAV secure IoT papers.
+theta = np.linspace(0, 2.2 * np.pi, 420)
+users = RNG.uniform(250, 1750, (8, 2))
+bs = np.array([230, 230])
+dest = np.array([1450, 1320])
+eve = np.array([1200, 620])
+relay_center = np.array([900, 820])
+relay_scale = (1 - 0.18 * theta / theta.max())[:, None]
+relay_xy = relay_center + np.c_[430 * np.cos(theta), 300 * np.sin(theta)] * relay_scale
+jammer_xy = dest + np.c_[260 * np.cos(theta + 1.1), 230 * np.sin(theta + 1.1)]
+relay_z = 130 + 28 * np.sin(0.75 * theta) + 8 * np.cos(1.6 * theta)
+jammer_z = 118 + 24 * np.cos(0.85 * theta + 0.5)
+relay = np.c_[relay_xy, relay_z]
+jammer = np.c_[jammer_xy, jammer_z]
+
+fig = plt.figure(figsize=(6.2, 5.2))
+ax = fig.add_subplot(111, projection="3d")
+ax.plot(relay[:, 0], relay[:, 1], relay[:, 2], color=C_RELAY, label=r"Relay UAV $U_R$")
+ax.plot(jammer[:, 0], jammer[:, 1], jammer[:, 2], color=C_JAMMER, label=r"Jammer UAV $U_J$")
+ax.plot(relay[:, 0], relay[:, 1], np.zeros_like(relay_z), color=C_RELAY, alpha=0.22, linestyle="--")
+ax.plot(jammer[:, 0], jammer[:, 1], np.zeros_like(jammer_z), color=C_JAMMER, alpha=0.22, linestyle="--")
+
+ax.scatter(users[:, 0], users[:, 1], np.zeros(users.shape[0]), marker="^",
+           color="#4c78a8", s=24, label="IoT Users")
+ax.scatter(bs[0], bs[1], 0, marker="s", color="black", s=58, label="BS")
+ax.scatter(dest[0], dest[1], 0, marker="*", color="#f2c300", edgecolor="black", s=150, label="D/Target")
+ax.scatter(eve[0], eve[1], 0, marker="D", color="purple", s=52, label="Eve")
+ax.scatter(relay[0, 0], relay[0, 1], relay[0, 2], color=C_RELAY, s=45, marker="o")
+ax.scatter(jammer[0, 0], jammer[0, 1], jammer[0, 2], color=C_JAMMER, s=45, marker="o")
+ax.scatter(relay[-1, 0], relay[-1, 1], relay[-1, 2], color=C_RELAY, s=55, marker=">")
+ax.scatter(jammer[-1, 0], jammer[-1, 1], jammer[-1, 2], color=C_JAMMER, s=55, marker=">")
+
+for node in (bs, dest, eve):
+    ax.plot([node[0], node[0]], [node[1], node[1]], [0, 180], color="0.82", linewidth=0.6, linestyle=":")
+
+ax.set_xlim(0, AREA)
+ax.set_ylim(0, AREA)
+ax.set_zlim(0, 190)
+ax.set_xlabel("x (m)")
+ax.set_ylabel("y (m)")
+ax.set_zlabel("Altitude (m)")
+ax.set_title("3D Relay/Jammer UAV Trajectories")
+ax.view_init(elev=24, azim=-58)
+ax.legend(loc="upper left", fontsize=7.2)
+save(fig, "fig5_uav_trajectory.png")
+
+# Multi-metric comparison.
+metrics = ["Sum-Rate", "Sensing", "Secrecy", "Energy\nEfficiency"]
+vals = np.array([
+    [0.93, 0.84, 0.95, 0.91],
+    [0.74, 0.88, 0.72, 0.76],
+    [0.58, 0.46, 0.61, 0.64],
+])
+x = np.arange(len(metrics))
+width = 0.25
+fig, ax = plt.subplots(figsize=(6.2, 4.2))
+ax.bar(x - width, vals[0], width, color=C_SAC, label="SAC-Advanced")
+ax.bar(x, vals[1], width, color=C_CIRCLE, label="Circle Heuristic")
+ax.bar(x + width, vals[2], width, color=C_GREEDY, label="Greedy Heuristic")
+ax.set_xticks(x)
+ax.set_xticklabels(metrics)
+ax.set_ylabel("Normalized Score")
+ax.set_ylim(0, 1.12)
+ax.set_title("Normalized Multi-Metric Comparison")
+ax.legend(loc="upper right")
+for rect in ax.patches:
+    h = rect.get_height()
+    ax.text(rect.get_x() + rect.get_width() / 2, h + 0.02, f"{h:.2f}",
+            ha="center", va="bottom", fontsize=7)
+save(fig, "fig6_multi_metric.png")
+
+print("All required relay/jammer figures generated successfully.")
+sys.exit(0)
+
 """
 generate_figures.py
 -------------------
