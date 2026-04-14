@@ -25,27 +25,26 @@
 % ---------- Title ----------
 \title{Deep Reinforcement Learning for Dual UAV-Assisted ISAC:\\ A Comprehensive Framework with Advanced Channel, Sensing, and Security Models}
 
-\author{Piyush Vishwakarma, Arnab Mallick, Granth Choubey, and Pranay Solanki}
 
 \begin{document}
 \maketitle
 
 % ---------- Abstract ----------
 \begin{abstract}
-This paper presents a dual-UAV framework for integrated sensing and communication with advanced physical-layer modeling. Unlike prior works that employ simplified propagation and energy models, the proposed formulation incorporates Rician fading with line-of-sight and non-line-of-sight transitions, Cram\'{e}r-Rao-bound-based bistatic sensing, secrecy-rate modeling with artificial noise and cooperative jamming, aerodynamic UAV energy consumption, and queue-aware quality-of-service modeling. Two cooperative UAVs trained using soft actor-critic jointly optimize trajectories and resource allocation across communication, sensing, security, and energy objectives. Experimental results show a 22\% improvement in energy efficiency over static heuristic baselines while maintaining a favorable trade-off between sensing accuracy and communication sum-rate. The results confirm the effectiveness of learning-based dual-UAV control under realistic physical-layer constraints.
+This paper presents a dual-UAV framework for integrated sensing and communication with advanced physical-layer modeling. Unlike prior works that employ simplified propagation and energy models, the proposed formulation incorporates Rician fading with line-of-sight and non-line-of-sight transitions, Cram\'{e}r-Rao-bound-based bistatic sensing, secrecy-rate modeling with artificial noise and cooperative jamming, aerodynamic UAV energy consumption, and queue-aware quality-of-service modeling. Two cooperative UAVs trained using soft actor-critic jointly optimize trajectories and resource allocation across communication, sensing, security, and energy objectives. Simulation results show a 22\% improvement in energy efficiency over static heuristic baselines while maintaining a favorable trade-off between sensing accuracy and communication sum-rate. The results confirm the effectiveness of learning-based dual-UAV control under realistic physical-layer constraints.
 \end{abstract}
 
 \begin{IEEEkeywords}
-UAV networks, ISAC, Deep Reinforcement Learning, Rician fading, Cram\'{e}r-Rao bound, Physical layer security, Soft Actor-Critic, cooperative jamming.
+UAV networks, Integrated Sensing And Communication(ISAC), Deep Reinforcement Learning Methods, Physical layer security, cooperative jamming.
 \end{IEEEkeywords}
 
 % ================================================================
 \section{Introduction}
 \label{sec:intro}
 
-UAVs have emerged as a transformative technology for next-generation wireless networks owing to their high mobility, flexible deployment, and ability to establish strong line-of-sight (LoS) air-to-ground (A2G) and ground-to-air (G2A) links~\cite{khuwaja2018survey, kurunathan2024mluav}. The emerging paradigm of Integrated Sensing and Communication (ISAC) further enables UAV platforms to support communication and environmental awareness through shared spectrum, mobility, and payload resources~\cite{wu2023uavisac, meng2024isacsurvey}. However, UAV-assisted ISAC design remains challenging because communication throughput, sensing accuracy, secrecy, and propulsion energy are tightly coupled through the UAVs' three-dimensional (3D) trajectories.
+UAVs have emerged as a transformative technology for next-generation wireless networks owing to their high mobility, flexible deployment, and ability to establish strong line-of-sight (LoS), air-to-ground (A2G), and ground-to-air (G2A) links~\cite{khuwaja2018survey, kurunathan2024mluav}. The emerging paradigm of Integrated Sensing and Communication (ISAC) further enables UAV platforms to support communication and environmental awareness through shared spectrum, mobility, and payload resources~\cite{wu2023uavisac, meng2024isacsurvey}. However, UAV-assisted ISAC design remains challenging because communication throughput, sensing accuracy, secrecy, and propulsion energy are tightly coupled through the UAVs' three-dimensional (3D) trajectories.
 
-Security is particularly important in UAV-assisted networks because the broadcast nature of wireless propagation and the LoS-dominant aerial links expose confidential data to passive eavesdroppers~\cite{pandey2022security, sun2019pls, wu2019safeguarding}. Physical layer security (PLS) techniques, including artificial noise (AN), cooperative jamming, power allocation, and trajectory optimization, have therefore been widely studied for UAV systems~\cite{wang2020energysecure, zhang2021dualuavdata, diao2022noma}. Recent dual-UAV architectures show that one UAV can operate as an information relay while another UAV operates as a friendly jammer, thereby degrading the eavesdropper link without requiring cryptographic cooperation from the destination~\cite{pandeydualuav2026, pandeyrobust2025, kang2022dualuav}. Related works also combine UAV communications with RF energy harvesting and SWIPT to extend network lifetime~\cite{perera2018swipt, pandey2025rfeh, pandeyswiptjam2025}, while hardware-impairment and shadowing analyses highlight the need for realistic channel and transceiver models~\cite{pandeyiot2023, pandeyrfehiot2025}.
+Security is particularly important in UAV-assisted networks because of the broadcast nature of wireless propagation and the LoS-dominant aerial links expose confidential data to passive eavesdroppers~\cite{pandey2022security, sun2019pls, wu2019safeguarding}. Physical layer security (PLS) techniques, including artificial noise (AN), cooperative jamming, power allocation, and trajectory optimization, have therefore been widely studied for UAV systems~\cite{wang2020energysecure, zhang2021dualuavdata, diao2022noma}. Recent dual-UAV architectures show that one UAV can operate as an information relay while another UAV operates as a friendly jammer, thereby degrading the eavesdropper link without requiring cryptographic cooperation from the destination~\cite{pandeydualuav2026, pandeyrobust2025, kang2022dualuav}. Related works also combine UAV communications with RF energy harvesting and Simultaneous Wireless Information and Power Transfer(SWIPT) to extend network lifetime~\cite{perera2018swipt, pandey2025rfeh, pandeyswiptjam2025}, while hardware-impairment and shadowing analyses highlight the need for realistic channel and transceiver models~\cite{pandeyiot2023, pandeyrfehiot2025}.
 
 The channel and resource-allocation literature further motivates the use of detailed A2G/G2A models. Rician fading with elevation-dependent LoS probability is a common choice for UAV links~\cite{khuwaja2018survey, pandeyaoidrl2025}; secrecy-aware resource allocation has been investigated for UAV relays, cooperative jammers, and robust trajectory design~\cite{xu2021secureuav, wang2021robust3d, gao2024roleswitching}; and STAR-RIS-assisted secure communication has recently expanded the design space for full-space signal control against HPPP eavesdroppers~\cite{pandeystarris2026}. For propulsion modeling, recent UAV optimization papers adopt the rotary-wing aerodynamic power model that captures blade profile, induced, and fuselage drag components rather than relying on linear energy consumption approximations~\cite{zeng2019energy, pandeydualuav2026, pandeyaoidrl2025}.
 
@@ -63,7 +62,7 @@ The remainder of this paper is organized as follows. Section~\ref{sec:motivation
 
 The system considered in this paper is motivated by secure dual-UAV relay/jammer communication, where a base station transfers information to a destination node through a UAV relay while a second UAV transmits jamming signals to suppress eavesdropping. This architecture is attractive because the relay and jammer can exploit 3D mobility to improve the legitimate B--$U_R$--D path and simultaneously degrade the Eve links, as in recent dual-UAV secure communication studies~\cite{wang2021robust3d, pandeydualuav2026}. At the same time, UAV mobility also creates useful sensing geometry, so the same aerial deployment can be extended toward ISAC-style operation when the destination node represents the monitored target or scheduled IoT device.
 
-The research gap is that existing studies usually optimize either secure relaying and cooperative jamming~\cite{pandeyswiptjam2025, pandeydualuav2026}, RF-EH/SWIPT operation~\cite{perera2018swipt, pandey2025rfeh}, or UAV-enabled ISAC sensing~\cite{zhang2023drlisac}, but not all of these aspects under a single, constraint-aware dual-UAV formulation. Several works also simplify the propulsion energy or omit information-causality and collision-avoidance constraints, which can make the resulting policy infeasible for practical relay/jammer flights. Hence, the present work focuses on a more realistic model that jointly captures A2G/G2A fading, secrecy degradation due to Eve, cooperative jamming, CRB-based sensing quality, and aerodynamic energy consumption.
+Recent research available on this usually usually optimize either secure relaying and cooperative jamming~\cite{pandeyswiptjam2025, pandeydualuav2026}, RF-EH/SWIPT operation~\cite{perera2018swipt, pandey2025rfeh}, or UAV-enabled ISAC sensing~\cite{zhang2023drlisac}, but not all of these aspects under a single, constraint-aware dual-UAV formulation. Several works also simplify the propulsion energy or omit information-causality and collision-avoidance constraints, which can make the resulting policy infeasible for practical relay/jammer flights. Hence, the present work focuses on a more realistic model that jointly captures A2G/G2A fading, secrecy degradation due to Eve, cooperative jamming, Cramér Rao Bound based sensing quality, and aerodynamic energy consumption.
 
 This motivates a formulation in which the relay trajectory, jammer trajectory, communication resources, sensing time, AN/jamming power, and battery evolution are optimized together rather than independently. The objective is not only to improve the learned utility, but also to maintain physically meaningful $U_R$/$U_J$ separation, feasible battery dynamics, and well-defined secrecy and sensing metrics throughout the mission.
 
@@ -99,7 +98,7 @@ The distance-dependent path loss (in dB) follows the log-normal distance model c
 \text{PL}(d) = \beta_0 + 10 \alpha_{\text{PL}} \log_{10}(d) + \xi,
 \label{eq:pathloss}
 \end{equation}
-where $\beta_0 = 20\log_{10}(4\pi f_c / c)$~(dB) is the free-space reference path loss at 1~m, with $f_c$ denoting the carrier frequency and $c$ the speed of light; $\alpha_{\text{PL}}$ is the environment-dependent path-loss exponent for LoS and NLoS conditions; and $\xi \sim \mathcal{N}(0, \sigma_{\xi}^2)$ models log-normal shadowing~\cite{pandeyiot2023, pandeyrfehiot2025}. Values are provided in Table~\ref{tab:sim_params}.
+where $\beta_0 = 20\log_{10}(4\pi f_c / c)$~(dB) is the free-space reference path loss at 1~m, with $f_c$ denoting the carrier frequency and $c$ the speed of light; $\alpha_{\text{PL}}$ is the environment dependent path loss exponent for LoS and NLoS conditions; and $\xi \sim \mathcal{N}(0, \sigma_{\xi}^2)$ models log-normal shadowing~\cite{pandeyiot2023, pandeyrfehiot2025}.
 
 \subsubsection{LoS Probability}
 The probability of LoS link depends on elevation angle $\theta$ (in degrees) and is modeled according to the ITU-R framework as adopted in UAV communication literature~\cite{khuwaja2018survey, pandeydualuav2026}:
@@ -107,7 +106,7 @@ The probability of LoS link depends on elevation angle $\theta$ (in degrees) and
 P_{\text{LoS}}(\theta) = \frac{1}{1 + a \exp(-b(\theta - a))},
 \label{eq:los}
 \end{equation}
-where parameters $(a, b)$ are environment-dependent coefficients whose values are listed in Table~\ref{tab:sim_params}.
+where parameters $(a, b)$ are environment dependent coefficients whose values are listed in Tables~\ref{tab:sim_params_a} and~\ref{tab:sim_params_b}.
 
 \subsubsection{Rician Fading}
 The channel gain $|h|^2$ follows a Rician distribution that accounts for both LoS and multipath components~\cite{khuwaja2018survey, pandeyiot2023}. Let $h_r, h_i \sim \mathcal{N}(0, 1)$ represent the scattered components. The channel gain is given by:
@@ -126,7 +125,7 @@ The sensing SNR at target location $\mathbf{p}_T$ is given by the bistatic radar
 \gamma_{\text{radar}} = \frac{P_t G_t G_r \lambda^2 \sigma}{(4\pi)^3 D_{\text{UAV1},D}^2 D_{\text{UAV2},D}^2 k T_0 B F},
 \label{eq:radar_snr}
 \end{equation}
-where $P_t = \tau_{\text{sense}} \cdot P_{\text{tx}}$ is the allocated sensing power; $G_t$ and $G_r$ are the transmit and receive antenna gains; $\lambda = c / f_s$ is the wavelength at sensing frequency $f_s$; $\sigma$ is the target radar cross-section (RCS); $B$ is the sensing bandwidth; $F$ is the receiver noise figure; and $kT_0$ is the thermal noise power density. All parameter values are listed in Table~\ref{tab:sim_params}.
+where $P_t = \tau_{\text{sense}} \cdot P_{\text{tx}}$ is the allocated sensing power; $G_t$ and $G_r$ are the transmit and receive antenna gains; $\lambda = c / f_s$ is the wavelength at sensing frequency $f_s$; $\sigma$ is the target radar cross-section (RCS); $B$ is the sensing bandwidth; $F$ is the receiver noise figure; and $kT_0$ is the thermal noise power density. All parameter values are listed in Tables~\ref{tab:sim_params_a} and~\ref{tab:sim_params_b}.
 
 \subsubsection{Geometric Dilution of Precision (GDOP)}
 For bistatic localization, GDOP measures how the UAV geometry affects localization accuracy~\cite{zhang2023drlisac}:
@@ -167,7 +166,7 @@ In the second IT phase, $U_R$ decodes the information received from B and forwar
 z_{R,l}[n]=\sqrt{P_R[n]g_{R,l}[n]}u_R[n]+\sqrt{P_J[n]g_{J,l}[n]}u_J[n]+n_l[n],
 \label{eq:rx_phase2}
 \end{equation}
-where $P_R[n]$ is the relay transmit power and $n_l[n]\sim\mathcal{CN}(0,N_l)$ denotes AWGN at D or $E_k$. Similar to~\cite{pandeydualuav2026}, we assume that $U_R$ and D can remove the known cooperative-jamming signal from their received observations, whereas Eve cannot cancel the jamming signal while decoding the confidential information.
+where $P_R[n]$ is the relay transmit power and $n_l[n]\sim\mathcal{CN}(0,N_l)$ denotes AWGN at target(D) or Eavesdropper($E_k$). Similar to~\cite{pandeydualuav2026}, we assume that $U_R$ and D can remove the known cooperative-jamming signal from their received observations, whereas Eve cannot cancel the jamming signal while decoding the confidential information.
 
 \subsubsection{Instantaneous SNR and Achievable Rate}
 The received SNR is derived from the ratio of average received signal power to noise power. Let $P_{\text{tx}}$ be the transmitted power and $N_0$ the noise power spectral density times bandwidth. The received signal power at distance $d$ is $P_{\text{rx}} = P_{\text{tx}} \cdot |h|^2 / \text{PL}_{\text{lin}}(d)$, where $\text{PL}_{\text{lin}} = 10^{\text{PL}_{\text{dB}}/10}$ is the linear-scale path loss from~\eqref{eq:pathloss}. The instantaneous SNR is then~\cite{pandeyiot2023, pandeyrfehiot2025}
@@ -235,11 +234,11 @@ Users experience stochastic packet arrivals with rate $\lambda_q$. The queue evo
 \section{Problem Formulation}
 \label{sec:problem}
 
-The joint design problem is formulated over the relay trajectory $\mathbf{q}_R(t)$, jammer trajectory $\mathbf{q}_J(t)$, WPT/IT time-switching ratio $\alpha_{\text{TS}}(t)$, sensing-time fraction $\tau_{\text{sense}}(t)$, AN/jamming power fraction $p_{\text{AN}}(t)$, and UAV transmit powers $P_{\varrho,\text{tx}}(t)$ for $\varrho\in\{R,J\}$. Let $\mathcal{X}$ denote this set of optimization variables. The long-term objective maximizes a discounted weighted sum of performance utilities, where the instantaneous utility $U_t$ combines communication, sensing, secrecy, and energy terms. The discount factor is denoted by $\gamma_{\text{d}}\in(0,1]$ to distinguish it from the SNR variables $\gamma_n$, $\gamma_{\text{user}}$, $\gamma_{\text{eve}}$, and $\gamma_{\text{radar}}$ defined earlier. Inspired by the constrained dual-UAV formulation in~\cite{pandeydualuav2026}, the optimization problem is written as
+The joint design problem is formulated over the relay trajectory $\mathbf{q}_R(t)$, jammer trajectory $\mathbf{q}_J(t)$, WPT/IT time-switching ratio $\alpha_{\text{TS}}(t)$, sensing-time fraction $\tau_{\text{sense}}(t)$, AN/jamming power fraction $p_{\text{AN}}(t)$, and UAV transmit powers $P_{\varrho,\text{tx}}(t)$ for $\varrho\in\{R,J\}$. Let $\mathcal{X}$ denote this set of optimization variables. The long-term objective maximizes a discounted weighted sum of performance utilities, where the instantaneous utility $U_t$ combines communication, sensing, secrecy, and energy terms. The discount factor is denoted by $\gamma_{\text{d}}\in(0,1]$ to distinguish it from the SNR variables $\gamma_n$, $\gamma_{\text{user}}$, $\gamma_{\text{eve}}$, and $\gamma_{\text{radar}}$ defined earlier. To remain consistent with the normalized time-state representation, the discounting term is written with the normalized slot index $t/T_{\max}\in[1/T_{\max},1]$. Inspired by the constrained dual-UAV formulation in~\cite{pandeydualuav2026}, the optimization problem is written as
 \begin{align}
 (\text{P1}):\quad
 \max_{\mathcal{X}} \quad
-& \mathbb{E}\left[\sum_{t=0}^{T_{\max}} \gamma_{\text{d}}^t U_t\right] \label{eq:problem}\\
+& \mathbb{E}\left[\sum_{t=1}^{T_{\max}} \gamma_{\text{d}}^{t/T_{\max}} U_t\right] \label{eq:problem}\\
 \text{s.t.}\quad
 & 0 \leq \alpha_{\text{TS}}(t) \leq 1,\quad
   0 \leq \tau_{\text{sense}}(t) \leq 1, \notag\\
@@ -286,7 +285,7 @@ The instantaneous utility is defined as a weighted sum of communication, sensing
 U_t = \alpha R_{\text{comm}} + (1-\alpha) U_{\text{sense}} - \lambda_E U_{\text{energy}} - \eta U_{\text{leak}} - \mu P_{\text{safety}} + \beta D_{\text{UAV}},
 \label{eq:reward}
 \end{equation}
-where $R_{\text{comm}}$ is the communication sum-rate computed from the legitimate-link rates in~\eqref{eq:legitimate_rate}, $U_{\text{sense}}$ is the sensing utility in~\eqref{eq:sense_util}, $U_{\text{energy}}$ is the normalized energy term obtained from~\eqref{eq:power}, and $U_{\text{sec}}=\tanh(R_s[n]/2)$ is the bounded secrecy utility derived from~\eqref{eq:secrecy}. The secrecy leakage term is written as $U_{\text{leak}} = 1 - U_{\text{sec}}$. In addition, $P_{\text{safety}}$ imposes penalties for separation less than $D_{\min}$ and for leaving the feasible region, while $D_{\text{UAV}} = \tanh(\|\mathbf{q}_R - \mathbf{q}_J\|/D_{\max})$ is the inter-UAV distance utility that increases with the separation between $U_R$ and $U_J$. The weighting coefficients $\alpha$, $\lambda_E$, $\eta$, $\mu$, and $\beta$ balance the individual utility components and their values are reported in Table~\ref{tab:sim_params}.
+where $R_{\text{comm}}$ is the communication sum-rate computed from the legitimate-link rates in~\eqref{eq:legitimate_rate}, $U_{\text{sense}}$ is the sensing utility in~\eqref{eq:sense_util}, $U_{\text{energy}}$ is the normalized energy term obtained from~\eqref{eq:power}, and $U_{\text{sec}}=\tanh(R_s[n]/2)$ is the bounded secrecy utility derived from~\eqref{eq:secrecy}. The secrecy leakage term is written as $U_{\text{leak}} = 1 - U_{\text{sec}}$. In addition, $P_{\text{safety}}$ imposes penalties for separation less than $D_{\min}$ and for leaving the feasible region, while $D_{\text{UAV}} = \tanh(\|\mathbf{q}_R - \mathbf{q}_J\|/D_{\max})$ is the inter-UAV distance utility that increases with the separation between $U_R$ and $U_J$. The weighting coefficients $\alpha$, $\lambda_E$, $\eta$, $\mu$, and $\beta$ balance the individual utility components and their values are reported in Tables~\ref{tab:sim_params_a} and~\ref{tab:sim_params_b}.
 
 \subsubsection{State Transition}
 The state transition follows the environment dynamics. Given state $\mathbf{s}_t$ and action $\mathbf{a}_t$, the next state $\mathbf{s}_{t+1}$ is determined by the UAV kinematic update, battery depletion from~\eqref{eq:battery}, queue evolution described in the QoS model, and channel realizations drawn from the Rician fading model. The transition probability $\mathcal{P}(\mathbf{s}_{t+1} | \mathbf{s}_t, \mathbf{a}_t)$ is implicitly defined by these stochastic dynamics:
@@ -384,24 +383,25 @@ Evaluation episodes & 20 \\
 \end{table}
 
 % ================================================================
-\section{Experimental Results}
+\section{Results and discussions}
 \label{sec:results}
 
 \subsection{Simulation Parameters}
 
-Table~\ref{tab:sim_params} consolidates all simulation parameter values used throughout this work.
+Tables~\ref{tab:sim_params_a} and~\ref{tab:sim_params_b} consolidate all simulation parameter values used throughout this work.
 
-\begin{table*}[!t]
+\begin{table}[!t]
 \centering
-\caption{Simulation Parameters}
-\label{tab:sim_params}
+\caption{Simulation Parameters (Part I)}
+\label{tab:sim_params_a}
 \scriptsize
+\renewcommand{\arraystretch}{1.04}
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}l l c@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.48\columnwidth} >{\raggedright\arraybackslash}p{0.20\columnwidth} >{\raggedright\arraybackslash}p{0.22\columnwidth}@{}}
 \toprule
 \textbf{Parameter} & \textbf{Symbol} & \textbf{Value} \\
 \midrule
-\multicolumn{3}{l}{Deployment} \\
+\multicolumn{3}{@{}l}{\textbf{Deployment}} \\
 Area size & $\mathcal{A}$ & $2000 \times 2000~\si{m^2}$ \\
 Altitude range & $[H_{\min}, H_{\max}]$ & $[80, 180]~\si{m}$ \\
 Time step & $\Delta t$ & 1~s \\
@@ -412,7 +412,7 @@ Number of targets & $T$ & 1 \\
 Min UAV separation & $D_{\min}$ & $50~\si{m}$ \\
 Distance normalization & $D_{\max}$ & $2000~\si{m}$ \\
 \midrule
-\multicolumn{3}{l}{Channel} \\
+\multicolumn{3}{@{}l}{\textbf{Channel}} \\
 Comm. carrier frequency & $f_c$ & 2.4~GHz \\
 Sensing carrier frequency & $f_s$ & 24~GHz \\
 Transmit power & $P_{\text{tx}}$ & 1~W (30~dBm) \\
@@ -425,7 +425,7 @@ LoS Rician K-factor & $K_{\text{LoS}}$ & 15~dB \\
 NLoS Rician K-factor & $K_{\text{NLoS}}$ & 0~dB \\
 Receiver noise powers & $N_R,N_D,N_{E_k}$ & $N_0$ \\
 \midrule
-\multicolumn{3}{l}{Sensing (Radar)} \\
+\multicolumn{3}{@{}l}{\textbf{Sensing (Radar)}} \\
 Antenna gain (Tx/Rx) & $G_t = G_r$ & 10~dBi \\
 Target RCS & $\sigma$ & 10~dBsm \\
 Sensing bandwidth & $B$ & 100~MHz \\
@@ -436,12 +436,20 @@ CRLB utility scale & $\kappa_{\text{CRB}}$ & 50 \\
 GDOP regularizer & $\epsilon$ & $10^{-3}$ \\
 \bottomrule
 \end{tabular}
-\hfill
-\begin{tabular}{@{}l l c@{}}
+\end{table}
+
+\begin{table}[!t]
+\centering
+\caption{Simulation Parameters (Part II)}
+\label{tab:sim_params_b}
+\scriptsize
+\renewcommand{\arraystretch}{1.04}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.48\columnwidth} >{\raggedright\arraybackslash}p{0.20\columnwidth} >{\raggedright\arraybackslash}p{0.22\columnwidth}@{}}
 \toprule
 \textbf{Parameter} & \textbf{Symbol} & \textbf{Value} \\
 \midrule
-\multicolumn{3}{l}{UAV Energy} \\
+\multicolumn{3}{@{}l}{\textbf{UAV Energy}} \\
 UAV mass & $m$ & 2~kg \\
 Battery capacity & $E_{\text{battery}}$ & 100~Wh \\
 Gravity constant & $g$ & $9.81~\si{m/s^2}$ \\
@@ -454,7 +462,7 @@ Rotor solidity & $s$ & 0.05 \\
 Rotor disc area & $A$ & 0.503~\si{m^2} \\
 Air density & $\rho$ & 1.225~\si{kg/m^3} \\
 \midrule
-\multicolumn{3}{l}{Security} \\
+\multicolumn{3}{@{}l}{\textbf{Security}} \\
 BS transmit power & $P_B$ & 1~W \\
 Relay power limit & $P_R[n]$ & $\leq P_{\max}$ \\
 Jammer power limit & $P_J[n]$ & $\leq P_{\max}$ \\
@@ -463,7 +471,7 @@ Eavesdropper process & $\Phi_e$ & HPPP \\
 Jamming threshold & $\tau_J$ & 0.7 \\
 Minimum secrecy rate & $R_s^{\min}$ & 0~bps/Hz \\
 \midrule
-\multicolumn{3}{l}{Resource and Utility} \\
+\multicolumn{3}{@{}l}{\textbf{Resource and Utility}} \\
 Time-switching ratio & $\alpha_{\text{TS}}$ & $[0,1]$ \\
 Sensing-time fraction & $\tau_{\text{sense}}$ & $[0,1]$ \\
 AN/jamming fraction & $p_{\text{AN}}$ & $[0,1]$ \\
@@ -473,12 +481,12 @@ Leakage penalty weight & $\eta$ & 0.10 \\
 Safety penalty weight & $\mu$ & 0.20 \\
 Distance utility weight & $\beta$ & 0.05 \\
 \midrule
-\multicolumn{3}{l}{QoS Queue} \\
+\multicolumn{3}{@{}l}{\textbf{QoS Queue}} \\
 Packet arrival rate & $\lambda_q$ & 1~Mbps \\
 Max queue length & $Q_{\max}$ & 10~MB \\
 \bottomrule
 \end{tabular}
-\end{table*}
+\end{table}
 
 \subsection{Implementation Details}
 The framework is implemented in Python using Gymnasium v0.29 for the RL environment interface, Stable-Baselines3 v2.3 for the SAC algorithm implementation, and NumPy/SciPy for numerical computations. Training visualization is performed via TensorBoard. The complete source code and trained models are publicly available.\footnote{Source code: \url{https://github.com/piyushvishwakarma01/UAV}}
@@ -490,35 +498,35 @@ We compare four configurations. The SAC-Advanced (proposed) employs Rician fadin
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=0.95\linewidth]{fig1_reward_convergence.png}
-\caption{Training reward convergence.}
-\label{fig:reward}
-\end{figure}
-
-\begin{figure}[!t]
-\centering
 \includegraphics[width=0.95\linewidth]{fig2_secrecy_comparison.png}
-\caption{Average secrecy-rate comparison.}
+\caption{Average secrecy-rate comparison across different methods.}
 \label{fig:secrecy}
 \end{figure}
 
 \begin{figure}[!t]
 \centering
+\includegraphics[width=0.95\linewidth]{fig2_secrecy_vs_jamming.png}
+\caption{Secrecy rate versus jamming power showing optimal power allocation.}
+\label{fig:secrecy_vs_jamming}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
 \includegraphics[width=0.95\linewidth]{fig5_uav_trajectory.png}
-\caption{Optimized 3D relay/jammer UAV trajectories.}
+\caption{Top-view relay/jammer UAV trajectories.}
 \label{fig:trajectory}
 \end{figure}
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=0.95\linewidth]{fig6_multi_metric.png}
-\caption{Normalized multi-metric comparison.}
-\label{fig:multimetric}
+\includegraphics[width=0.95\linewidth]{fig6_energy_comparison.png}
+\caption{Average energy comparison.}
+\label{fig:energy}
 \end{figure}
 
 \subsection{Performance Analysis}
 
-Table~\ref{tab:results} presents the quantitative comparison across all methods and metrics. The SAC agent discovers an energy-aware relay/jammer trajectory profile, consuming less energy per step than the optimized circle heuristic and outperforming greedy maneuvers. As shown in Fig.~\ref{fig:trajectory}, the agent learns meaningful role differentiation: the relay-side UAV maintains the legitimate communication path while the jammer/sensing-side UAV dynamically pivots to satisfy cooperative jamming and sensing goals.
+Table~\ref{tab:results} presents the quantitative comparison across all methods and metrics. Figures~\ref{fig:secrecy}, \ref{fig:secrecy_vs_jamming}, \ref{fig:trajectory}, and~\ref{fig:energy} demonstrate the comprehensive performance of the proposed policy. The secrecy comparison (Fig.~\ref{fig:secrecy}) shows competitive performance against baselines, while the secrecy-jamming trade-off (Fig.~\ref{fig:secrecy_vs_jamming}) illustrates optimal power allocation. As shown in Fig.~\ref{fig:trajectory}, the relay-side UAV maintains the legitimate communication path while the jammer/sensing-side UAV dynamically pivots to satisfy cooperative jamming and sensing goals, achieving superior energy efficiency (Fig.~\ref{fig:energy}).
 
 \begin{table}[!t]
 \centering
